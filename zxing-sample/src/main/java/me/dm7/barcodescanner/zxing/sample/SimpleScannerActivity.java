@@ -17,7 +17,7 @@ public class SimpleScannerActivity extends BaseScannerActivity implements ZXingS
         super.onCreate(state);
         setContentView(R.layout.activity_simple_scanner);
         setupToolbar();
-
+        counts=0;
         ViewGroup contentFrame = (ViewGroup) findViewById(R.id.content_frame);
         mScannerView = new ZXingScannerView(this);
         contentFrame.addView(mScannerView);
@@ -28,6 +28,8 @@ public class SimpleScannerActivity extends BaseScannerActivity implements ZXingS
         super.onResume();
         mScannerView.setResultHandler(this);
         mScannerView.startCamera();
+        mScannerView.setAspectTolerance(0.5f);
+        mScannerView.setAutoFocus(true);
     }
 
     @Override
@@ -36,10 +38,13 @@ public class SimpleScannerActivity extends BaseScannerActivity implements ZXingS
         mScannerView.stopCamera();
     }
 
+    private static int counts;
+
     @Override
     public void handleResult(Result rawResult) {
+        counts++;
         Toast.makeText(this, "Contents = " + rawResult.getText() +
-                ", Format = " + rawResult.getBarcodeFormat().toString(), Toast.LENGTH_SHORT).show();
+                ", Format = " + rawResult.getBarcodeFormat().toString() + " Counts = " + counts, Toast.LENGTH_SHORT).show();
 
         // Note:
         // * Wait 2 seconds to resume the preview.
@@ -51,6 +56,6 @@ public class SimpleScannerActivity extends BaseScannerActivity implements ZXingS
             public void run() {
                 mScannerView.resumeCameraPreview(SimpleScannerActivity.this);
             }
-        }, 2000);
+        }, 500);
     }
 }

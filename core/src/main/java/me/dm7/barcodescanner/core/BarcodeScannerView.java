@@ -76,7 +76,7 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         mViewFinderView = createViewFinderView(getContext());
     }
 
-    public final void setupLayout(CameraWrapper cameraWrapper) {
+    public void setupLayout(CameraWrapper cameraWrapper) {
         removeAllViews();
 
         mPreview = new CameraPreview(getContext(), cameraWrapper, this);
@@ -212,13 +212,22 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
 
     public void stopCameraPreview() {
         if(mPreview != null) {
-            mPreview.stopCameraPreview();
+            try {
+                mPreview.stopCameraPreview();
+            } catch (Exception e) {
+                Log.e(getClass().getSimpleName(),"Stop preview: error", e);
+            }
+
         }
     }
 
     protected void resumeCameraPreview() {
         if(mPreview != null) {
-            mPreview.showCameraPreview();
+            try {
+                mPreview.showCameraPreview();
+            }catch (Exception e) {
+                Log.e(getClass().getSimpleName(),"Resume preview: error", e);
+            }
         }
     }
 
@@ -313,19 +322,24 @@ public abstract class BarcodeScannerView extends FrameLayout implements Camera.P
         int width = size.width;
         int height = size.height;
 
+        return getRotatedData(data, width, height);
+    }
+
+    public byte[] getRotatedData(byte[] data, int originalWidth, int originalHeight) {
+
         int rotationCount = getRotationCount();
 
         if(rotationCount == 1 || rotationCount == 3) {
             for (int i = 0; i < rotationCount; i++) {
                 byte[] rotatedData = new byte[data.length];
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++)
-                        rotatedData[x * height + height - y - 1] = data[x + y * width];
+                for (int y = 0; y < originalHeight; y++) {
+                    for (int x = 0; x < originalWidth; x++)
+                        rotatedData[x * originalHeight + originalHeight - y - 1] = data[x + y * originalWidth];
                 }
                 data = rotatedData;
-                int tmp = width;
-                width = height;
-                height = tmp;
+                int tmp = originalWidth;
+                originalWidth = originalHeight;
+                originalHeight = tmp;
             }
         }
 
